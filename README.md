@@ -92,7 +92,6 @@ GetComps(zpidex, count=10, rentzestimate=TRUE, api_key = getOption('ZillowR-zws_
 You can get the Zestimate (Zillow's estimated home value) with `GetZestimate`. The return is a data frame with the Zillow-estimated value of the home, either the property value or the estimated rental value (if `rentzestimate=TRUE`). This function works with either a single Zillow property ID or a vector of IDs:
 
 ``` r
-#GetZestimate with a vector input
 GetZestimate(zpids= zpidex ,
              rentzestimate=TRUE , api_key=getOption('ZillowR-zws_id'))
 #> # A tibble: 1 x 20
