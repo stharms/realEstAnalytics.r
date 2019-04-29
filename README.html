@@ -45,16 +45,20 @@ devtools<span class="op">::</span><span class="kw">install_github</span>(<span c
 <span class="kw">set_zillow_web_service_id</span>(<span class="st">'YOUR_API_KEY'</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#retrieve the current ZWS_ID in use</span>
 zapi_key =<span class="st"> </span><span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>)</code></pre></div>
+<h2 id="calling-the-zillow-api-from-r">Calling the Zillow API from R</h2>
 <p>You can get basic information on a property based on its address using <code>GetDeepSearchResults</code>. The return is a dataframe with the property's estimated value as well as other characteristics (i.e., bedrooms, bathrooms, etc.). To get results for more than one address at once, we recommend <code>GetDeepSearchResults_dataframe</code> rather than using an <code>apply()</code> or other mapping function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetDeepSearchResults</span>(<span class="st">'600 S. Quail Ct.'</span>, <span class="dt">city=</span><span class="st">'Newton'</span>,<span class="dt">state=</span><span class="st">'KS'</span>, <span class="dt">zipcode=</span><span class="ot">NULL</span>,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetDeepSearchResults</span>(<span class="st">'2902 Wood St.'</span>, <span class="dt">city=</span><span class="st">'Ames'</span>,<span class="dt">state=</span><span class="st">'IA'</span>, <span class="dt">zipcode=</span><span class="dv">50014</span>,
+                     <span class="dt">rentzestimate=</span><span class="ot">TRUE</span>,
                      <span class="dt">api_key=</span><span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>))
-<span class="co">#&gt; # A tibble: 1 x 26</span>
+<span class="co">#&gt; # A tibble: 1 x 31</span>
 <span class="co">#&gt;   address zipcode city  state   lat  long region_name region_id type </span>
 <span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;     &lt;chr&gt;</span>
-<span class="co">#&gt; 1 600 S ~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; # ... with 17 more variables: zestimate &lt;dbl&gt;, zest_lastupdated &lt;date&gt;,</span>
+<span class="co">#&gt; 1 2902 W~ 50014   Ames  IA     42.0 -93.7 College Cr~ 764177    neig~</span>
+<span class="co">#&gt; # ... with 22 more variables: zestimate &lt;dbl&gt;, zest_lastupdated &lt;date&gt;,</span>
 <span class="co">#&gt; #   zest_monthlychange &lt;dbl&gt;, zest_percentile &lt;dbl&gt;, zestimate_low &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   zestimate_high &lt;dbl&gt;, zpid &lt;chr&gt;, bathrooms &lt;dbl&gt;, bedrooms &lt;dbl&gt;,</span>
+<span class="co">#&gt; #   zestimate_high &lt;dbl&gt;, rentzestimate &lt;dbl&gt;, rent_lastupdated &lt;date&gt;,</span>
+<span class="co">#&gt; #   rent_monthlychange &lt;dbl&gt;, rentzestimate_low &lt;dbl&gt;,</span>
+<span class="co">#&gt; #   rentzestimate_high &lt;dbl&gt;, zpid &lt;chr&gt;, bathrooms &lt;dbl&gt;, bedrooms &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   finishedSqFt &lt;dbl&gt;, lastSoldDate &lt;chr&gt;, lastSoldPrice &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   lotSizeSqFt &lt;dbl&gt;, taxAssessment &lt;dbl&gt;, taxAssessmentYear &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   totalRooms &lt;dbl&gt;, yearBuilt &lt;dbl&gt;</span></code></pre></div>
@@ -96,58 +100,23 @@ zpidex &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</span
 <span class="co">#&gt; #   zestimate_high &lt;dbl&gt;, rentzestimate &lt;dbl&gt;, rent_lastupdated &lt;date&gt;,</span>
 <span class="co">#&gt; #   rent_monthlychange &lt;dbl&gt;, rentzestimate_low &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   rentzestimate_high &lt;dbl&gt;</span></code></pre></div>
+<p>If you want more detailed information on a specific property, you can specify the ZPID and return the results with <code>GetUpdatedPropertyDetails</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetUpdatedPropertyDetails</span>(<span class="dt">zpid=</span><span class="dv">2084934591</span> ,
+                           <span class="dt">api_key=</span> <span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>))
+<span class="co">#&gt;                    address zipcode city state     lat      long</span>
+<span class="co">#&gt; 1 312 Hayward Ave UNIT 102   50014 Ames    IA 42.0198 -93.65168</span>
+<span class="co">#&gt;            useCode bedrooms bathrooms finishedSqFt heatingSources numUnits</span>
+<span class="co">#&gt; 1 MultiFamily5Plus        1       1.0          400     Other, Gas        6</span>
+<span class="co">#&gt;   currentMonth total</span>
+<span class="co">#&gt; 1            1     1</span></code></pre></div>
+<h2 id="non-api-regional-time-series-data">Non-API Regional Time Series Data</h2>
 <p>There are also a few options for retrieving non-API data. Get the time series of property values aggregated by region and type with <code>get_rental_listings</code> and/or <code>get_ZHVI_series</code>. These return dataframes of time series data for the selected geographic aggregation level and property type, read from a static .csv hosted by Zillow. For options on the arguments, see the introduction vignette.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Pull the data by state and zipcode for 4 bedrooms</span>
-cityseries &lt;-<span class="st"> </span><span class="kw">get_ZHVI_series</span>(<span class="dt">bedrooms=</span><span class="dv">4</span>,<span class="dt">geography=</span><span class="st">&quot;Zip&quot;</span>)
-<span class="co">#&gt; [1] &quot;attempting to read file:&quot;</span>
-<span class="co">#&gt; [1] &quot;http://files.zillowstatic.com/research/public/Zip/Zip_Zhvi_4bedroom.csv&quot;</span>
-<span class="co">#&gt; Parsed with column specification:</span>
-<span class="co">#&gt; cols(</span>
-<span class="co">#&gt;   .default = col_double(),</span>
-<span class="co">#&gt;   RegionName = col_character(),</span>
-<span class="co">#&gt;   City = col_character(),</span>
-<span class="co">#&gt;   State = col_character(),</span>
-<span class="co">#&gt;   Metro = col_character(),</span>
-<span class="co">#&gt;   CountyName = col_character()</span>
-<span class="co">#&gt; )</span>
-<span class="co">#&gt; See spec(...) for full column specifications.</span>
-
-<span class="kw">head</span>(cityseries)
-<span class="co">#&gt; # A tibble: 6 x 283</span>
-<span class="co">#&gt;   RegionID RegionName City  State Metro CountyName SizeRank `1996-04`</span>
-<span class="co">#&gt;      &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;     &lt;dbl&gt;</span>
-<span class="co">#&gt; 1    84654 60657      Chic~ IL    Chic~ Cook Coun~        1    381400</span>
-<span class="co">#&gt; 2    91982 77494      Katy  TX    Hous~ Harris Co~        2    241400</span>
-<span class="co">#&gt; 3    84616 60614      Chic~ IL    Chic~ Cook Coun~        3    551500</span>
-<span class="co">#&gt; 4    91940 77449      Katy  TX    Hous~ Harris Co~        4    109900</span>
-<span class="co">#&gt; 5    93144 79936      El P~ TX    El P~ El Paso C~        5    102400</span>
-<span class="co">#&gt; 6    91733 77084      Hous~ TX    Hous~ Harris Co~        6    121000</span>
-<span class="co">#&gt; # ... with 275 more variables: `1996-05` &lt;dbl&gt;, `1996-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1996-07` &lt;dbl&gt;, `1996-08` &lt;dbl&gt;, `1996-09` &lt;dbl&gt;, `1996-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1996-11` &lt;dbl&gt;, `1996-12` &lt;dbl&gt;, `1997-01` &lt;dbl&gt;, `1997-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1997-03` &lt;dbl&gt;, `1997-04` &lt;dbl&gt;, `1997-05` &lt;dbl&gt;, `1997-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1997-07` &lt;dbl&gt;, `1997-08` &lt;dbl&gt;, `1997-09` &lt;dbl&gt;, `1997-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1997-11` &lt;dbl&gt;, `1997-12` &lt;dbl&gt;, `1998-01` &lt;dbl&gt;, `1998-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1998-03` &lt;dbl&gt;, `1998-04` &lt;dbl&gt;, `1998-05` &lt;dbl&gt;, `1998-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1998-07` &lt;dbl&gt;, `1998-08` &lt;dbl&gt;, `1998-09` &lt;dbl&gt;, `1998-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1998-11` &lt;dbl&gt;, `1998-12` &lt;dbl&gt;, `1999-01` &lt;dbl&gt;, `1999-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1999-03` &lt;dbl&gt;, `1999-04` &lt;dbl&gt;, `1999-05` &lt;dbl&gt;, `1999-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1999-07` &lt;dbl&gt;, `1999-08` &lt;dbl&gt;, `1999-09` &lt;dbl&gt;, `1999-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `1999-11` &lt;dbl&gt;, `1999-12` &lt;dbl&gt;, `2000-01` &lt;dbl&gt;, `2000-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2000-03` &lt;dbl&gt;, `2000-04` &lt;dbl&gt;, `2000-05` &lt;dbl&gt;, `2000-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2000-07` &lt;dbl&gt;, `2000-08` &lt;dbl&gt;, `2000-09` &lt;dbl&gt;, `2000-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2000-11` &lt;dbl&gt;, `2000-12` &lt;dbl&gt;, `2001-01` &lt;dbl&gt;, `2001-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2001-03` &lt;dbl&gt;, `2001-04` &lt;dbl&gt;, `2001-05` &lt;dbl&gt;, `2001-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2001-07` &lt;dbl&gt;, `2001-08` &lt;dbl&gt;, `2001-09` &lt;dbl&gt;, `2001-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2001-11` &lt;dbl&gt;, `2001-12` &lt;dbl&gt;, `2002-01` &lt;dbl&gt;, `2002-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2002-03` &lt;dbl&gt;, `2002-04` &lt;dbl&gt;, `2002-05` &lt;dbl&gt;, `2002-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2002-07` &lt;dbl&gt;, `2002-08` &lt;dbl&gt;, `2002-09` &lt;dbl&gt;, `2002-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2002-11` &lt;dbl&gt;, `2002-12` &lt;dbl&gt;, `2003-01` &lt;dbl&gt;, `2003-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2003-03` &lt;dbl&gt;, `2003-04` &lt;dbl&gt;, `2003-05` &lt;dbl&gt;, `2003-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2003-07` &lt;dbl&gt;, `2003-08` &lt;dbl&gt;, `2003-09` &lt;dbl&gt;, `2003-10` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2003-11` &lt;dbl&gt;, `2003-12` &lt;dbl&gt;, `2004-01` &lt;dbl&gt;, `2004-02` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2004-03` &lt;dbl&gt;, `2004-04` &lt;dbl&gt;, `2004-05` &lt;dbl&gt;, `2004-06` &lt;dbl&gt;,</span>
-<span class="co">#&gt; #   `2004-07` &lt;dbl&gt;, `2004-08` &lt;dbl&gt;, ...</span></code></pre></div>
+<p>For the median home property values:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Pull the data by zipcode for 4 bedrooms</span>
+<span class="kw">get_ZHVI_series</span>(<span class="dt">bedrooms=</span><span class="dv">3</span>,<span class="dt">geography=</span><span class="st">&quot;Zip&quot;</span>)</code></pre></div>
+<p>For the median rental values:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Rental values for Single Family Residences by State</span>
+<span class="kw">get_rental_listings</span>(<span class="dt">type=</span><span class="st">'SFR'</span>, <span class="dt">rate=</span><span class="st">'PerSqFt'</span>,<span class="dt">geography=</span><span class="st">&quot;State&quot;</span>)</code></pre></div>
 <p>Please see the vignette (under articles) to see further documentation and examples of <code>realEstAnalytics</code>' capabilities.</p>
 
 </body>

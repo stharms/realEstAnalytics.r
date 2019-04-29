@@ -12,7 +12,7 @@
 
 <meta name="author" content="Steve Harms" />
 
-<meta name="date" content="2019-04-25" />
+<meta name="date" content="2019-04-28" />
 
 <title>Exploring Zillow Real Estate Data: Introduction to realEstAnalytics</title>
 
@@ -92,16 +92,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Exploring Zillow Real Estate Data: Introduction to realEstAnalytics</h1>
 <h4 class="author"><em>Steve Harms</em></h4>
-<h4 class="date"><em>2019-04-25</em></h4>
+<h4 class="date"><em>2019-04-28</em></h4>
 
 
 
-<div id="introduction" class="section level1">
-<h1>Introduction</h1>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
 <p>Zillow has collected and analyzed enormous amounts of property data in order to help prospective buyers, sellers, and renters make informed decisions in their real estate transactions. Zillow has been kind enough to make much of this data available to the public through its APIs and other locations on their site. This vignette is an introduction to the <code>realEstAnalytics</code> package, which contains several functions that supply calls to Zillow’s Real Estate API. The returned data are available in their raw XML form, or in a tidy format that allows for quick and clean manipulation and analysis of the data.</p>
 </div>
-<div id="installing-and-loading-the-realestanalytics-package" class="section level1">
-<h1>Installing and Loading the realEstAnalytics Package</h1>
+<div id="installing-and-loading-the-realestanalytics-package" class="section level2">
+<h2>Installing and Loading the realEstAnalytics Package</h2>
 <p>The <code>realEstAnalytics</code> package is hosted on github. It can be installed with the <code>devtools</code> package, and then loaded as with any other <code>R</code> package.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#installing and loading realEstAnalytics</span>
 devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">'xiyuansun/realEstAnalytics'</span>)
@@ -109,9 +109,10 @@ devtools<span class="op">::</span><span class="kw">install_github</span>(<span c
 <span class="kw">library</span>(realEstAnalytics)</code></pre></div>
 <p><code>realEstAnalytics</code> does not have any dependencies other than the latest version of <code>R</code>, but does import functions from a number of other packages to aid in reading and tidying the XML data. See the documentation for this list, and be careful with the namespaces of any other packages you may be using in conjunction with <code>realEstAnalytics</code>.</p>
 </div>
-<div id="obtaining-and-setting-your-zillow-web-service-id-api-key" class="section level1">
-<h1>Obtaining and setting your Zillow Web Service ID (API key)</h1>
-<p>Before you can make any calls to any of Zillow’s APIs, you must register with Zillow by signing up at <a href="https://www.zillow.com/howto/api/APIOverview.htm" class="uri">https://www.zillow.com/howto/api/APIOverview.htm</a> (make sure you read the Terms of Service!). Once you have registered, Zillow will send you a unique API key, formally called a ZWSID. Keep this in a safe, non-public place to be referenced later. Before we go further, it should be noted that Zillow will prevent excessive calls, and thus may block your ZWSID if you issue more than 1,000 API requests in a day (so be careful!).</p>
+<div id="obtaining-and-setting-your-zillow-web-service-id-api-key" class="section level2">
+<h2>Obtaining and setting your Zillow Web Service ID (API key)</h2>
+<p>Before you can make any calls to any of Zillow’s APIs, you must register with Zillow by signing up at <a href="https://www.zillow.com/howto/api/APIOverview.htm" class="uri">https://www.zillow.com/howto/api/APIOverview.htm</a> (make sure you read the Terms of Service!). Once you have registered, Zillow will send you a unique API key, formally called a ZWSID. Keep this in a safe, non-public place to be referenced later.</p>
+<p>Before we go further, it should be noted that Zillow will prevent excessive calls, and thus may block your ZWSID if you issue more than 1,000 API requests in a day (so be careful!).</p>
 <p>Once you have obtained your ZWSID, you can set it in your <code>R</code> session with the <code>zillow_web_service_id()</code> function and retrieve it with <code>getOption('ZillowR-zws_id')</code> :</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#set the ZWS_ID</span>
 <span class="kw">set_zillow_web_service_id</span>(<span class="st">'YOUR_API_KEY'</span>)</code></pre></div>
@@ -119,8 +120,8 @@ devtools<span class="op">::</span><span class="kw">install_github</span>(<span c
 zapi_key =<span class="st"> </span><span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>)</code></pre></div>
 <p>It is helpful to set this when you start your session, so that you do not need to continually reference it if making many calls to the API.</p>
 </div>
-<div id="returning-property-information-with-getdeepsearchresults-and-getdeepsearchresults_dataframe" class="section level1">
-<h1>Returning Property Information with <code>GetDeepSearchResults</code> and <code>GetDeepSearchResults_dataframe</code></h1>
+<div id="returning-property-information-with-getupdatedpropertydetailsgetdeepsearchresults-and-getdeepsearchresults_dataframe" class="section level2">
+<h2>Returning Property Information with <code>GetUpdatedPropertyDetails</code>,<code>GetDeepSearchResults</code> and <code>GetDeepSearchResults_dataframe</code></h2>
 <p>Suppose we’re interested in moving to Newton, KS, and are considering a number of different homes in the area for purchase. One particular home we’re interested in is located at 600 S. Quail Ct. in Newton. We can obtain information on the property using the <code>DeepSearchResults</code> function, which will pull the data corresponding to all of the Zillow Property IDs at a given address.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetDeepSearchResults</span>(<span class="st">'600 S. Quail Ct.'</span>, <span class="dt">city=</span><span class="st">'Newton'</span>,<span class="dt">state=</span><span class="st">'KS'</span>, <span class="dt">zipcode=</span><span class="ot">NULL</span>,
                      <span class="dt">api_key=</span><span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>))
@@ -134,7 +135,7 @@ zapi_key =<span class="st"> </span><span class="kw">getOption</span>(<span class
 <span class="co">#&gt; #   finishedSqFt &lt;dbl&gt;, lastSoldDate &lt;chr&gt;, lastSoldPrice &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   lotSizeSqFt &lt;dbl&gt;, taxAssessment &lt;dbl&gt;, taxAssessmentYear &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   totalRooms &lt;dbl&gt;, yearBuilt &lt;dbl&gt;</span></code></pre></div>
-<p>The function returns a dataframe with variables corresponding to address and geographic location, as well as the property’s Zillow property ID (<code>zpid</code>) and information corresponding to the Zestimate, which is Zillow’s proprietary algorithm for estimating the property value. Additionally, there ar variables corresponding to the living space of the house (<code>bedrooms</code>,<code>bathrooms</code>,<code>finishedSqFt</code>, etc.), and property tax information. For example, our property has a Zillow estimated value of $230,830, which is quite close to the last sale price of $230,000 and well above the assessed property tax value of $214,800.</p>
+<p>The function returns a dataframe with variables corresponding to address and geographic location, as well as the property’s Zillow property ID (<code>zpid</code>) and information corresponding to the Zestimate, which is Zillow’s proprietary algorithm for estimating the property value. Additionally, there are variables corresponding to the living space of the house (<code>bedrooms</code>,<code>bathrooms</code>,<code>finishedSqFt</code>, etc.), and property tax information. For example, our property has a Zillow estimated value of $230,830, which is quite close to the last sale price of $230,000 and well above the assessed property tax value of $214,800.</p>
 <p>Note that we did not need to supply a zip code argument. In order for <code>DeepSearchResults</code> to work, we need only to specify either the city/state combination OR the zipcode. Sometimes it may help the search to be more specific by specifying the zipcode. The following code will produce the same result using only zipcode but no city/state combination:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetDeepSearchResults</span>(<span class="st">'600 S. Quail Ct.'</span>, <span class="dt">zipcode=</span><span class="dv">67114</span>,
                      <span class="dt">rentzestimate=</span><span class="ot">TRUE</span>, <span class="dt">api_key=</span><span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>))
@@ -151,7 +152,8 @@ zapi_key =<span class="st"> </span><span class="kw">getOption</span>(<span class
 <span class="co">#&gt; #   lotSizeSqFt &lt;dbl&gt;, taxAssessment &lt;dbl&gt;, taxAssessmentYear &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   totalRooms &lt;dbl&gt;, yearBuilt &lt;dbl&gt;</span></code></pre></div>
 <p>Additionally, we set <code>rentzestimate=TRUE</code> in the previous example, which tells the API call to return the Zillow estimated rental price data for the property in addition to the Zestimate for the property.</p>
-<p>One note of caution when using <code>GetDeepSearchResults</code> is that it will return the results for ALL of the Zillow property IDs at an address, which can cause difficulties if one is trying to get results for multiple addresses at once, such as using the function in conjunction with the <code>apply()</code> family of functions. To avoid this, one may be able to use <code>GetDeepSearchResults_dataframe</code>, which takes a data frame of addresses as its arguments. Suppose we want to look at the results for several results at once, and we have the data stored in a data frame named <code>newtonaddresses</code> in our environment. To get the search results for the full data frame, all we need to do is supply <code>GetDeepSearchResults_dataframe</code> with the data and the column numbers corresponding to the geographic information:</p>
+<p>One note of caution when using <code>GetDeepSearchResults</code> is that it will return the results for ALL of the Zillow property IDs at an address, which can cause difficulties if one is trying to get results for multiple addresses at once, such as using the function in conjunction with the <code>apply()</code> family of functions. To avoid this, one may be able to use <code>GetDeepSearchResults_dataframe</code>, which takes a data frame of addresses as its arguments.</p>
+<p>Suppose we want to look at the results for several results at once, and we have the data stored in a data frame named <code>newtonaddresses</code> in our environment. To get the search results for the full data frame, all we need to do is supply <code>GetDeepSearchResults_dataframe</code> with the data and the column numbers corresponding to the geographic information:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
 <span class="kw">library</span>(magrittr)
 <span class="co">#&gt; </span>
@@ -194,10 +196,26 @@ newtonaddresses &lt;-<span class="st"> </span><span class="kw">GetComps</span>(<
 <span class="kw">GetDeepSearchResults_dataframe</span>(<span class="dt">.df=</span>newtonaddresses,
                                <span class="dt">col.address=</span><span class="dv">1</span> , <span class="dt">col.zipcode=</span><span class="dv">2</span> , <span class="dt">col.city=</span><span class="dv">3</span> , <span class="dt">col.state=</span><span class="dv">4</span>,
                                <span class="dt">api_key=</span><span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>))</code></pre></div>
+<p>If we want to find out more characteristics of the property that we could not find with <code>GetDeepSearchResults</code>, the function <code>GetUpdatedPropertyDetails</code> may help us out. It takes a Zillow Property ID and returns much of the non-value information from the search functions, as well as additional information about parking, HVAC, appliances, and more:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">exdetails &lt;-<span class="st"> </span><span class="kw">GetUpdatedPropertyDetails</span>(<span class="dt">zpid=</span><span class="dv">93961896</span> ,
+                           <span class="dt">api_key=</span> <span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>))
+
+<span class="kw">names</span>(exdetails)
+<span class="co">#&gt;  [1] &quot;address&quot;          &quot;zipcode&quot;          &quot;city&quot;            </span>
+<span class="co">#&gt;  [4] &quot;state&quot;            &quot;lat&quot;              &quot;long&quot;            </span>
+<span class="co">#&gt;  [7] &quot;useCode&quot;          &quot;bedrooms&quot;         &quot;bathrooms&quot;       </span>
+<span class="co">#&gt; [10] &quot;finishedSqFt&quot;     &quot;lotSizeSqFt&quot;      &quot;yearBuilt&quot;       </span>
+<span class="co">#&gt; [13] &quot;numFloors&quot;        &quot;numRooms&quot;         &quot;basement&quot;        </span>
+<span class="co">#&gt; [16] &quot;roof&quot;             &quot;exteriorMaterial&quot; &quot;parkingType&quot;     </span>
+<span class="co">#&gt; [19] &quot;heatingSources&quot;   &quot;heatingSystem&quot;    &quot;coolingSystem&quot;   </span>
+<span class="co">#&gt; [22] &quot;appliances&quot;       &quot;floorCovering&quot;    &quot;rooms&quot;           </span>
+<span class="co">#&gt; [25] &quot;currentMonth&quot;     &quot;total&quot;</span></code></pre></div>
 </div>
-<div id="finding-comparable-properties-with-getcomps-and-getdeepcomps" class="section level1">
-<h1>Finding Comparable Properties with <code>GetComps</code> and <code>GetDeepComps</code></h1>
-<p>For every property, Zillow calculates a “Compscore” of comparable properties in the area. The ‘Compscore’ attribute is representative of the relevance of each property to the target, with a score of 0 being the closest and higher Compscores being less relevant. We have two options for API calls: <code>GetComps</code>, which retrieves only geographic, Zestimate, and Compscore information for the comparables, and <code>GetDeepComps</code>, which returns everything from <code>GetComps</code> as well as the specific property data that one would acquire through <code>GetDeepSearchResults</code>. We can retrieve up to 25 comparable properties with the <code>count</code> argument, although one should be careful not to exceed Zillow’s API limit by calling this repeatedly. Note here that, instead of an address, these functions take the specific Zillow property ID (zpid) for the property, which can be found by first calling <code>GetDeepSearchResults</code> for the address:</p>
+<div id="finding-comparable-properties-with-getcomps-and-getdeepcomps" class="section level2">
+<h2>Finding Comparable Properties with <code>GetComps</code> and <code>GetDeepComps</code></h2>
+<p>For every property, Zillow calculates a “Compscore” of comparable properties in the area. The ‘Compscore’ attribute is representative of the relevance of each property to the target, with a score of 0 being the closest and higher Compscores being less relevant. We have two options for API calls: <code>GetComps</code>, which retrieves only geographic, Zestimate, and Compscore information for the comparables, and <code>GetDeepComps</code>, which returns everything from <code>GetComps</code> as well as the specific property data that one would acquire through <code>GetDeepSearchResults</code>.</p>
+<p>We can retrieve up to 25 comparable properties with the <code>count</code> argument, although one should be careful not to exceed Zillow’s API limit by calling this repeatedly. Note here that, instead of an address, these functions take the specific Zillow property ID (zpid) for the property, which can be found by first calling <code>GetDeepSearchResults</code> for the address.</p>
+<p>Are we getting a good deal on our home at 600 S. Quail Court? We can look at the information on comparable recently sold properties in the area:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">
 <span class="co">#retrieve the zpid from GetDeepSearchResults</span>
 zpidex &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</span>(<span class="st">'600 S. Quail Ct.'</span>, <span class="dt">zipcode=</span><span class="dv">67114</span>,
@@ -214,11 +232,11 @@ zpidex &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</span
 <span class="co">#&gt;  4 427 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
 <span class="co">#&gt;  5 410 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
 <span class="co">#&gt;  6 2109 S~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  7 605 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  8 506 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  9 618 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; 10 3000 A~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; 11 605 S ~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  7 605 S ~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  8 605 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  9 506 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt; 10 618 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt; 11 3000 A~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
 <span class="co">#&gt; # ... with 13 more variables: zestimate &lt;dbl&gt;, zest_lastupdated &lt;date&gt;,</span>
 <span class="co">#&gt; #   zest_monthlychange &lt;dbl&gt;, zest_percentile &lt;dbl&gt;, zestimate_low &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   zestimate_high &lt;dbl&gt;, rentzestimate &lt;dbl&gt;, rent_lastupdated &lt;date&gt;,</span>
@@ -231,16 +249,16 @@ zpidex &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</span
 <span class="co">#&gt;    address zipcode city  state   lat  long region_name region_id type </span>
 <span class="co">#&gt;    &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;     &lt;chr&gt;</span>
 <span class="co">#&gt;  1 600 S ~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  2 605 S ~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  3 2137 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
-<span class="co">#&gt;  4 2112 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
-<span class="co">#&gt;  5 605 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  6 506 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  7 839 Me~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  8 623 Me~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt;  9 735 Qu~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; 10 612 Qu~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; 11 618 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  2 2137 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
+<span class="co">#&gt;  3 2112 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
+<span class="co">#&gt;  4 427 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  5 410 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  6 2109 S~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  7 605 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  8 506 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt;  9 618 Au~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt; 10 3000 A~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt; 11 605 S ~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
 <span class="co">#&gt; # ... with 18 more variables: zestimate &lt;dbl&gt;, zest_lastupdated &lt;date&gt;,</span>
 <span class="co">#&gt; #   zest_monthlychange &lt;dbl&gt;, zest_percentile &lt;dbl&gt;, zestimate_low &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   zestimate_high &lt;dbl&gt;, zpid &lt;chr&gt;, compscore &lt;dbl&gt;, bathrooms &lt;dbl&gt;,</span>
@@ -248,8 +266,8 @@ zpidex &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</span
 <span class="co">#&gt; #   lastSoldPrice &lt;dbl&gt;, lotSizeSqFt &lt;dbl&gt;, taxAssessment &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   taxAssessmentYear &lt;dbl&gt;, totalRooms &lt;dbl&gt;, yearBuilt &lt;dbl&gt;</span></code></pre></div>
 </div>
-<div id="retrieving-basic-property-value-estimates-with-getzestimate" class="section level1">
-<h1>Retrieving Basic Property Value Estimates with <code>GetZestimate</code></h1>
+<div id="retrieving-basic-property-value-estimates-with-getzestimate" class="section level2">
+<h2>Retrieving Basic Property Value Estimates with <code>GetZestimate</code></h2>
 <p>If you do not want all of the property information from <code>GetDeepSearchResults</code>, you can quickly retrieve the Zestimate and/or rent Zestimates of the property’s value with <code>GetZestimate</code>, using the Zillow property ID. This function will also take a vector of property IDs in the <code>zpid</code> argument if you want to retrieve more than one Zestimate at once:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#GetZestimate with a vector input</span>
 <span class="kw">GetZestimate</span>(<span class="dt">zpids=</span><span class="kw">c</span>(zpidex,<span class="dv">109818062</span>,<span class="dv">1341669</span>,<span class="dv">1341715</span>) ,
@@ -267,9 +285,10 @@ zpidex &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</span
 <span class="co">#&gt; #   rent_monthlychange &lt;dbl&gt;, rentzestimate_low &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   rentzestimate_high &lt;dbl&gt;</span></code></pre></div>
 </div>
-<div id="combining-the-api-calls-to-build-a-local-housing-dataset" class="section level1">
-<h1>Combining the API Calls to Build a Local Housing Dataset</h1>
-<p>Suppose we want to build a larger dataset based on only our original address. We have seen how <code>GetComps</code> can get a few comparable properties in the area. If we want to build a larger dataset, we can chain the <code>GetDeepSearchResults</code>,<code>GetComps</code>, and <code>GetDeepComps</code> functions together to get more properties in an area after starting with one location. To speed the cleaning and combining, we use <code>dplyr</code> and <code>%&gt;%</code> from <code>magrittr</code> in the tidyverse family, with an <code>lapply</code>:</p>
+<div id="combining-the-api-calls-to-build-a-local-housing-dataset" class="section level2">
+<h2>Combining the API Calls to Build a Local Housing Dataset</h2>
+<p>Suppose we want to build a larger dataset based on only our original address. This would facilitate an analysis of recent property sales in the general area to gain insight into the housing market.</p>
+<p>We have seen how <code>GetComps</code> can get a few comparable properties in the area. If we want to build a larger dataset, we can chain the <code>GetDeepSearchResults</code>,<code>GetComps</code>, and <code>GetDeepComps</code> functions together to get more properties in an area after starting with one location. To speed the cleaning and combining, we use <code>dplyr</code> and <code>%&gt;%</code> from <code>magrittr</code> in the tidyverse family, with an <code>lapply</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(purrr)
 <span class="co">#build a dataset in one sequence of commands</span>
 <span class="co">#starting from one address</span>
@@ -293,11 +312,11 @@ richdata &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</sp
 <span class="co">#&gt;   address zipcode city  state   lat  long region_name region_id type </span>
 <span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;     &lt;chr&gt;</span>
 <span class="co">#&gt; 1 600 S ~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; 2 2137 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
-<span class="co">#&gt; 3 2112 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
-<span class="co">#&gt; 4 427 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; 5 410 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
-<span class="co">#&gt; 6 2109 S~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt; 2 919 N ~ 67114   Newt~ KS     38.1 -97.3 Newton      19619     city </span>
+<span class="co">#&gt; 3 2137 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
+<span class="co">#&gt; 4 2112 B~ 67114   Newt~ KS     38.0 -97.4 Newton      19619     city </span>
+<span class="co">#&gt; 5 427 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
+<span class="co">#&gt; 6 410 Vi~ 67114   Newt~ KS     38.0 -97.3 Newton      19619     city </span>
 <span class="co">#&gt; # ... with 18 more variables: zestimate &lt;dbl&gt;, zest_lastupdated &lt;date&gt;,</span>
 <span class="co">#&gt; #   zest_monthlychange &lt;dbl&gt;, zest_percentile &lt;dbl&gt;, zestimate_low &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   zestimate_high &lt;dbl&gt;, zpid &lt;chr&gt;, compscore &lt;dbl&gt;, bathrooms &lt;dbl&gt;,</span>
@@ -305,23 +324,24 @@ richdata &lt;-<span class="st"> </span><span class="kw">GetDeepSearchResults</sp
 <span class="co">#&gt; #   lastSoldPrice &lt;dbl&gt;, lotSizeSqFt &lt;dbl&gt;, taxAssessment &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   taxAssessmentYear &lt;dbl&gt;, totalRooms &lt;dbl&gt;, yearBuilt &lt;dbl&gt;</span>
 <span class="kw">dim</span>(richdata)
-<span class="co">#&gt; [1] 101  27</span></code></pre></div>
-<p>What just happened here? We used our original address and obtained its Zillow property ID with <code>GetDeepSearchResults</code>, then used that ZPID with <code>GetComps</code> to get 10 comparable properties. Then we took the ZPIDs from those comparables and applied <code>GetDeepComps</code> to each, resulting in an expanded number of properties. We can then bind all of the data together with <code>bind_rows()</code> from the <code>dplyr</code> package, and take the distinct addresses to get a rich dataset for our area for purposes of analysis. <em>Note:</em> In this example we sent over 100 requests to the API. Remember that Zillow limits the number of requests you can make in a day, so be careful using these functions in conjunction with <code>apply()</code> or similar functions. You may get locked out!</p>
+<span class="co">#&gt; [1] 100  27</span></code></pre></div>
+<p>What just happened here? We used our original address and obtained its Zillow property ID with <code>GetDeepSearchResults</code>, then used that ZPID with <code>GetComps</code> to get 10 comparable properties. Then we took the ZPIDs from those comparables and applied <code>GetDeepComps</code> to each, resulting in an expanded number of properties. We can then bind all of the data together with <code>bind_rows()</code> from the <code>dplyr</code> package, and take the distinct addresses to get a rich dataset for our area for purposes of analysis.</p>
+<p><em>Note:</em> In this example we sent over 100 requests to the API. Remember that Zillow limits the number of requests you can make in a day, so be careful using these functions in conjunction with <code>apply()</code> or similar functions. You may get locked out!</p>
 </div>
-<div id="home-price-charts-with-getchart" class="section level1">
-<h1>Home Price Charts with <code>GetChart</code></h1>
+<div id="home-price-charts-with-getchart" class="section level2">
+<h2>Home Price Charts with <code>GetChart</code></h2>
 <p>You can obtain a URL for a the Zestimates for a property with <code>GetChart</code>. The return from the API is a link to the image of the chart, which can be displayed in <code>R</code> with whatever package you prefer. Sometimes the URLs need some cleaning in order to correctly be able to read the image.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(XML)
 <span class="co">#Get Chart returns a list with the API's response</span>
 <span class="co">#The chart URL is in the `response` element in the `url` attribute</span>
-chartex &lt;-<span class="st"> </span><span class="kw">GetChart</span>(<span class="dt">zpid =</span> <span class="dv">1340244</span>, <span class="dt">unit_type =</span> <span class="st">'dollar'</span>, <span class="dt">width =</span> <span class="dv">600</span>, <span class="dt">height =</span> <span class="dv">300</span>,
+chartex &lt;-<span class="st"> </span><span class="kw">GetChart</span>(<span class="dt">zpid =</span> <span class="dv">93961896</span>, <span class="dt">unit_type =</span> <span class="st">'dollar'</span>, <span class="dt">width =</span> <span class="dv">600</span>, <span class="dt">height =</span> <span class="dv">300</span>,
           <span class="dt">chartDuration =</span> <span class="st">'10years'</span>, <span class="dt">zws_id =</span> <span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>))
 XML<span class="op">::</span><span class="kw">names.XMLNode</span>(chartex<span class="op">$</span>response)
 <span class="co">#&gt;             url   graphsanddata </span>
 <span class="co">#&gt;           &quot;url&quot; &quot;graphsanddata&quot;</span></code></pre></div>
 </div>
-<div id="geographic-region-time-series-data-with-get_zhvi_series-and-get_rental_listings" class="section level1">
-<h1>Geographic Region Time Series Data with <code>Get_ZHVI_series</code> and <code>Get_rental_listings</code></h1>
+<div id="geographic-region-time-series-data-with-get_zhvi_series-and-get_rental_listings" class="section level2">
+<h2>Geographic Region Time Series Data with <code>Get_ZHVI_series</code> and <code>Get_rental_listings</code></h2>
 <p>Zillow also supplies some of its research data and aggregated listings data, hosted at <a href="https://www.zillow.com/research/data/" class="uri">https://www.zillow.com/research/data/</a> . These are static .csv files and don’t require a Zillow Web Service ID for download, however the <code>realEstAnalytics</code> package supplies functions that can read these files directly into <code>R</code> and save you the time of downloading and saving them locally. <code>Get_ZHVI_series</code> and <code>Get_rental_listings</code> read the .csv files and return a dataframe for a variety of different series for a specified <code>geography</code>. The options available for these two functions are listed below.</p>
 <p><code>get_ZHVI_series()</code>: ‘-’ implies argument default.</p>
 <table>
@@ -450,8 +470,6 @@ XML<span class="op">::</span><span class="kw">names.XMLNode</span>(chartex<span 
 </tr>
 </tbody>
 </table>
-<div id="section" class="section level2">
-<h2></h2>
 <p><code>get_rental_listings</code>: ‘-’ implies argument default.</p>
 <table>
 <thead>
@@ -579,7 +597,8 @@ citytop &lt;-<span class="st"> </span><span class="kw">get_ZHVI_series</span>(<s
 <span class="kw">dim</span>(citytop)
 <span class="co">#&gt; [1]   1 283</span></code></pre></div>
 <p>Some of these files are quite large, and may take time to read in. It is recommended to immediately filter with <code>dplyr::filter()</code> as the file is read rather than keeping the whole dataset in memory (unless you have a use for all of the regions in your analysis).</p>
-<p>The first 3 to 7 (depending on the dataset) columns returned correspond to geographic ID information, while the remaining columns are monthly time series observations. With only a few commands we can melt the data into a format that is ready for visualization. It’s clear that our home is valued ($231,234) well above the median value for the zipcode, but this particular city appears to be much cheaper than the rest of the state of Kansas. It looks like Newton and Kansas did not recieve the worst of the housing crisis, and that the city and state are on a sharp upward trend.</p>
+<p>The first 3 to 7 (depending on the dataset) columns returned correspond to geographic ID information, while the remaining columns are monthly time series observations. With only a few commands we can melt the data into a format that is ready for visualization.</p>
+<p>It’s clear that our home is valued ($231,234) well above the median value for the zipcode, but this particular city appears to be much cheaper than the rest of the state of Kansas. It looks like Newton and Kansas did not recieve the worst of the housing crisis, and that the city and state are on a sharp upward trend.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#melting the data using reshape2 and zoo</span>
 topmelted &lt;-<span class="st"> </span>citytop <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span>reshape2<span class="op">::</span><span class="kw">melt</span>(<span class="dt">id=</span><span class="dv">1</span><span class="op">:</span><span class="dv">7</span>, <span class="dt">variable.name=</span><span class="st">'Date'</span>, <span class="dt">value.name=</span><span class="st">'MedianPrice'</span>) <span class="op">%&gt;%</span>
@@ -617,21 +636,21 @@ KSrentals &lt;-<span class="st"> </span><span class="kw">get_rental_listings</sp
 <span class="co">#&gt; 1       0.579</span></code></pre></div>
 <p>The most recent observation suggests that rent in Kansas is almost $0.87 per square foot for 4 bedroom homes, but our target home’s estimated rent value is approximately $0.58. This generally holds in line with what we found with the property value previously. Our new home is much cheaper than the rest of the state.</p>
 </div>
-</div>
-<div id="manipulate-the-xml-data-yourself-with-rawtrue" class="section level1">
-<h1>Manipulate the XML Data Yourself with <code>raw=TRUE</code></h1>
+<div id="manipulate-the-xml-data-yourself-with-rawtrue" class="section level2">
+<h2>Manipulate the XML Data Yourself with <code>raw=TRUE</code></h2>
 <p>In order to produce tidy and useful dataframe output with the functions in <code>realEstAnalytics</code>, the XML data returned from the API must be untangled. In the process, some data may be ignored or missed. If you’re a skilled XML data cleaner, you can take your shot at extracting and cleaning the data by setting <code>raw=TRUE</code> in any of the functions that call Zillow’s API. The return of the function is now the raw XML data instead of a dataframe, which can then be manipulated with a variety of packages (<code>xml2</code> is our recommendation).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetDeepSearchResults</span>(<span class="st">'600 S. Quail Ct.'</span>, <span class="dt">zipcode=</span><span class="dv">67114</span>,
                      <span class="dt">rentzestimate=</span><span class="ot">TRUE</span>, <span class="dt">api_key=</span><span class="kw">getOption</span>(<span class="st">'ZillowR-zws_id'</span>),
-                     <span class="dt">raw=</span><span class="ot">TRUE</span>) <span class="op">%&gt;%</span><span class="st"> </span>xml2<span class="op">::</span><span class="kw">xml_children</span>()
-<span class="co">#&gt; {xml_nodeset (3)}</span>
+                     <span class="dt">raw=</span><span class="ot">TRUE</span>) <span class="co">#%&gt;% xml2::xml_children()</span>
+<span class="co">#&gt; {xml_document}</span>
+<span class="co">#&gt; &lt;searchresults schemaLocation=&quot;http://www.zillow.com/static/xsd/SearchResults.xsd https://www.zillowstatic.com/vstatic/80d5e73/static/xsd/SearchResults.xsd&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:SearchResults=&quot;http://www.zillow.com/static/xsd/SearchResults.xsd&quot;&gt;</span>
 <span class="co">#&gt; [1] &lt;request&gt;\n  &lt;address&gt;600 S. Quail Ct.&lt;/address&gt;\n  &lt;citystatezip&gt;67 ...</span>
 <span class="co">#&gt; [2] &lt;message&gt;\n  &lt;text&gt;Request successfully processed&lt;/text&gt;\n  &lt;code&gt;0&lt; ...</span>
 <span class="co">#&gt; [3] &lt;response&gt;\n  &lt;results&gt;\n    &lt;result&gt;\n      &lt;zpid&gt;1340244&lt;/zpid&gt;\n  ...</span></code></pre></div>
 <p>The returned XML document contains the request sent to the API, the message from the API call (success or not), and the response which contains the data requested. A previous package for Zillow’s API in R, called <code>ZillowR</code>, returned only the raw XML as above. The <code>realEstAnalytics</code> package retains this option, but also allows gives you the option to bypass the extraction/cleaning stage.</p>
 </div>
-<div id="further-reading" class="section level1">
-<h1>Further Reading</h1>
+<div id="further-reading" class="section level2">
+<h2>Further Reading</h2>
 <ul>
 <li>For further documentation on Zillow’s APIs, see <a href="https://www.zillow.com/howto/api/APIOverview.htm" class="uri">https://www.zillow.com/howto/api/APIOverview.htm</a>
 <ul>

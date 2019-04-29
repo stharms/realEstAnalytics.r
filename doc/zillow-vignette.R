@@ -69,6 +69,12 @@ newtonaddresses <- GetComps(1340244, count=20, api_key = getOption('ZillowR-zws_
 #                                 api_key=getOption('ZillowR-zws_id'))
 
 ## ------------------------------------------------------------------------
+exdetails <- GetUpdatedPropertyDetails(zpid=93961896 ,
+                           api_key= getOption('ZillowR-zws_id'))
+
+names(exdetails)
+
+## ------------------------------------------------------------------------
 
 #retrieve the zpid from GetDeepSearchResults
 zpidex <- GetDeepSearchResults('600 S. Quail Ct.', zipcode=67114,
@@ -111,7 +117,7 @@ dim(richdata)
 library(XML)
 #Get Chart returns a list with the API's response
 #The chart URL is in the `response` element in the `url` attribute
-chartex <- GetChart(zpid = 1340244, unit_type = 'dollar', width = 600, height = 300,
+chartex <- GetChart(zpid = 93961896, unit_type = 'dollar', width = 600, height = 300,
           chartDuration = '10years', zws_id = getOption('ZillowR-zws_id'))
 XML::names.XMLNode(chartex$response)
 
@@ -204,5 +210,5 @@ GetDeepSearchResults('600 S. Quail Ct.', zipcode=67114,
 ## ------------------------------------------------------------------------
 GetDeepSearchResults('600 S. Quail Ct.', zipcode=67114,
                      rentzestimate=TRUE, api_key=getOption('ZillowR-zws_id'),
-                     raw=TRUE) %>% xml2::xml_children()
+                     raw=TRUE) #%>% xml2::xml_children()
 
