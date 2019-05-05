@@ -1,8 +1,9 @@
 #' Make request to Zillow API GetUpdatedPropertyDetails Web Service
 #'
 #' For a specified property, the GetUpdatedPropertyDetails API returns all of
-#' the home facts that have been edited by the home's owner or agent. The result
-#' set contains the following attributes:
+#' the home facts that have been edited by the home's owner or agent.
+#'
+#' @return The result set contains the following attributes:
 #'
 #' \itemize{
 #'   \item Property address
@@ -54,60 +55,25 @@ GetUpdatedPropertyDetails <- function(
     return(outdf)
   }
 
-  address_data <- xmlresult %>%
-    lapply(extract_address_e) %>%
-    lapply(as.data.frame.list)
-  address_data <- suppressWarnings(bind_rows(address_data))
-
-
-  editted_factsdata <- xmlresult %>%
-    lapply(extract_editedfacts) %>%
-    lapply(as.data.frame.list)
-  editted_factsdata <- suppressWarnings(bind_rows(editted_factsdata))
-
-  pagevew_data <- xmlresult %>%
-    lapply(extract_pageview) %>%
-    lapply(as.data.frame.list)
-  pagevew_data <- suppressWarnings(bind_rows(pagevew_data))
-
-  outdf <- data.frame(address_data,editted_factsdata,pagevew_data)
-  return(outdf)
-}
-
-extract_address_e <- function(xmlres){
-  #xmlres <- xmlresult
-  address_data <- xmlres %>% xml_nodes('address') %>% xml_children %>%  xml_text() %>%
+  address_data <- xmlresult %>% xml_nodes('address') %>% xml_children %>%  xml_text() %>%
     matrix(ncol=6,byrow=T) %>% data.frame()
   names(address_data) <- c("address", "zipcode", "city", "state", "lat","long")
   address_data <- address_data %>% mutate_at(c("lat","long"),as.character) %>% mutate_at(c("lat","long"),as.numeric)
 
-  return(data.frame(address_data))
-}
+  editted_factnames <- xmlresult %>% xml_nodes('editedFacts') %>% xml_children() %>% xml_name()
+  editted_factsdata <- xmlresult %>% xml_nodes('editedFacts') %>% xml_children %>%  xml_text() %>%
+    matrix(ncol=length(editted_factnames),byrow=T) %>% data.frame()
+  names(editted_factsdata) <- c(editted_factnames)
 
-#extract_address(xmlresult)
-
-extract_editedfacts <- function(xmlres){
-  factsnames <- xmlres %>% xml_nodes('editedFacts') %>% xml_children() %>% xml_name()
-  factsdata <- xmlres %>% xml_nodes('editedFacts') %>% xml_children %>%  xml_text() %>%
-    matrix(ncol=length(factsnames),byrow=T) %>% data.frame()
-
-  names(factsdata) <- c(factsnames)
-
-  return(data.frame(factsdata))
-
-}
-
-
-extract_pageview <- function(xmlres){
-  pageview_data <- xmlres %>% xml_nodes('pageViewCount') %>% xml_children %>%  xml_text() %>%
+  pageview_data <- xmlresult %>% xml_nodes('pageViewCount') %>% xml_children %>%  xml_text() %>%
     matrix(ncol=2,byrow=T) %>% data.frame()
-
   names(pageview_data) <- c("currentMonth","total")
 
-  return(data.frame(pageview_data))
+  outdf <- data.frame(address_data,editted_factsdata,pageview_data)
 
-
+  return(outdf)
 }
+
 
 
 

@@ -4,6 +4,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+library(zoo)
 library(realEstAnalytics)
 set_zillow_web_service_id('X1-ZWz181enkd4cgb_82rpe')
 YOURAPIKEYHERE = getOption('ZillowR-zws_id')
@@ -30,7 +31,7 @@ GetDeepSearchResults('600 S. Quail Ct.', city='Newton',state='KS', zipcode=NULL,
 GetDeepSearchResults('600 S. Quail Ct.', zipcode=67114,
                      rentzestimate=TRUE, api_key=getOption('ZillowR-zws_id'))
 
-## ------------------------------------------------------------------------
+## ---- message=FALSE, echo=FALSE------------------------------------------
 library(dplyr)
 library(magrittr)
 addresses <- c('733 Normandy Ct.',
@@ -60,16 +61,17 @@ newtonaddresses <- GetComps(1340244, count=20, api_key = getOption('ZillowR-zws_
   rbind(c('3425 Locust St.', '64109', 'Kansas City', 'MO'), addex) %>%
   sample_n(size=32)
 
-## ----eval=FALSE----------------------------------------------------------
-#  #there are 32 addresses, some in different zipcodes, to look up
-#  #GetDeepSearchResults_dataframe will get the info for us:
-#  
-#  GetDeepSearchResults_dataframe(.df=newtonaddresses,
-#                                 col.address=1 , col.zipcode=2 , col.city=3 , col.state=4,
-#                                 api_key=getOption('ZillowR-zws_id'))
+## ------------------------------------------------------------------------
+#there are 32 addresses, some in different zipcodes, to look up
+head(newtonaddresses)
+#GetDeepSearchResults_dataframe will get the info for us:
+
+GetDeepSearchResults_dataframe(.df=newtonaddresses,
+                               col.address=1 , col.zipcode=2 , col.city=3 , col.state=4,
+                               api_key=getOption('ZillowR-zws_id'))
 
 ## ------------------------------------------------------------------------
-exdetails <- GetUpdatedPropertyDetails(zpid=93961896 ,
+exdetails <- GetUpdatedPropertyDetails(zpid='93961896' ,
                            api_key= getOption('ZillowR-zws_id'))
 
 names(exdetails)
@@ -91,27 +93,12 @@ GetDeepComps(zpidex, count=10, rentzestimate=FALSE, api_key = getOption('ZillowR
 GetZestimate(zpids=c(zpidex,109818062,1341669,1341715) ,
              rentzestimate=TRUE , api_key=getOption('ZillowR-zws_id'))
 
-## ------------------------------------------------------------------------
-library(purrr)
-#build a dataset in one sequence of commands
-#starting from one address
-richdata <- GetDeepSearchResults('600 S. Quail Ct.',
-                                 zipcode=67114,
-                     rentzestimate=TRUE,
-                     api_key=getOption('ZillowR-zws_id')) %>%
-  dplyr::select(zpid) %>%
-  purrr::as_vector("character") %>% 
-  GetComps(count=10, api_key=getOption('ZillowR-zws_id')) %>%
-  dplyr::select(zpid) %>%
-  purrr::as_vector("character") %>% 
-  lapply(GetDeepComps,
-         count=10,
-         api_key=getOption('ZillowR-zws_id')) %>% 
-  dplyr::bind_rows() %>% 
-  dplyr::distinct()
-
-head(richdata)
-dim(richdata)
+## ---- eval=FALSE, echo=TRUE----------------------------------------------
+#    ZPID_list %>%
+#    lapply(GetDeepComps,
+#           count=25,
+#           api_key=getOption('ZillowR-zws_id')) %>%
+#    bind_rows()
 
 ## ------------------------------------------------------------------------
 library(XML)
@@ -158,21 +145,16 @@ dim(citytop)
 ## ---- echo=TRUE, results='hide', warning=F-------------------------------
 #melting the data using reshape2 and zoo
 topmelted <- citytop %>% 
-  reshape2::melt(id=1:7, variable.name='Date', value.name='MedianPrice') %>%
-  dplyr::mutate(Date=(zoo::as.yearmon(Date)))
-
+  tidyr::gather( key='Date', value='MedianPrice',-c(1:7)) %>% mutate(Date=(as.yearmon(Date)))
 statemelted <- Stateseries %>%
-  reshape2::melt(id=1:3, variable.name='Date', value.name='MedianPrice') %>%
-  dplyr::mutate(Date=(zoo::as.yearmon(Date)))
-
+  tidyr::gather( key='Date', value='MedianPrice',-c(1:3)) %>% mutate(Date=(as.yearmon(Date)))
 citymelted <- cityseries %>% 
-  reshape2::melt(id=1:7, variable.name='Date', value.name='MedianPrice') %>%
-  dplyr::mutate(Date=(zoo::as.yearmon(Date)))
+  tidyr::gather( key='Date', value='MedianPrice',-c(1:7)) %>% mutate(Date=(as.yearmon(Date)))
 
 ## ---- echo=FALSE,fig.width=8.5, fig.height=7, warning=F------------------
 tscomb <- data.frame(Date=topmelted$Date, Zip=citymelted$MedianPrice, State=statemelted$MedianPrice,
                      TopTier=topmelted$MedianPrice) %>%
- reshape2::melt(id=1, variable.name="geography", value.name='price') 
+tidyr::gather(-1, key="geography", value='price') 
 
 plotZHVI<- function(ts.melted, date.min=NULL, date.max=NULL){
   if(is.null(date.min)) date.min = min(ts.melted$Date)
