@@ -3,7 +3,7 @@
 \docType{data}
 \name{newtonhouses}
 \alias{newtonhouses}
-\title{Data on 210 comparable homes in the Newton, KS, USA area}
+\title{Data on 51 comparable homes in the Newton, KS, USA area}
 \format{A data frame with 51 rows and 26 variables:
 \describe{
 \item{address}{Property street address}
