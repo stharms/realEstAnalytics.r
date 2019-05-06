@@ -53,7 +53,7 @@ zapi_key = getOption('ZillowR-zws_id')
 It is helpful to set this when you start your session, so that you do not need to continually reference it if making many calls to the API.
 
 ## Returning Property Information with `GetUpdatedPropertyDetails`,`GetDeepSearchResults` and `GetDeepSearchResults_dataframe`
-Suppose we're interested in moving to Newton, KS, and are considering a number of different homes in the area for purchase. One particular home we're interested in is located at 600 S. Quail Ct. in Newton. We can obtain information on the property using the `DeepSearchResults` function, which will pull the data corresponding to all of the Zillow Property IDs at a given address.
+Suppose we're interested in moving to Newton, KS, and are considering a number of different homes in the area for purchase. One particular home we're interested in is located at 600 S. Quail Ct. in Newton. We can obtain information on the property using the `GetDeepSearchResults` function, which will pull the data corresponding to all of the Zillow Property IDs at a given address.
 ```{r}
 GetDeepSearchResults('600 S. Quail Ct.', city='Newton',state='KS', zipcode=NULL,
                      api_key=getOption('ZillowR-zws_id'))
@@ -134,10 +134,15 @@ zpidex <- GetDeepSearchResults('600 S. Quail Ct.', zipcode=67114,
                      rentzestimate=TRUE, api_key=getOption('ZillowR-zws_id'))$zpid
 
 #GetComps for the '600 S. Quail Ct.' address
-GetComps(zpidex, count=10, rentzestimate=TRUE, api_key = getOption('ZillowR-zws_id'))
+GetComps(zpidex, count=10, rentzestimate=TRUE, api_key = getOption('ZillowR-zws_id')) %>% 
+  dim()
 
 #GetDeepComps returns the same information as GetComps, with additional property data
-GetDeepComps(zpidex, count=10, rentzestimate=FALSE, api_key = getOption('ZillowR-zws_id'))
+deepcomps <- GetDeepComps(zpidex, count=10, rentzestimate=FALSE, api_key = getOption('ZillowR-zws_id'))
+
+str(deepcomps)
+
+summary(deepcomps$zestimate)
 ```
 
 ## Retrieving Basic Property Value Estimates with `GetZestimate`
@@ -278,7 +283,7 @@ The first 3 to 7 (depending on the dataset) columns returned correspond to geogr
 It's clear that our home is valued ($231,234) well above the median value for the zipcode, but this particular city appears to be much cheaper than the rest of the state of Kansas. It looks like Newton and Kansas did not recieve the worst of the housing crisis, and that the city and state are on a sharp upward trend.
 
 ```{r, echo=TRUE, results='hide', warning=F}
-#melting the data using reshape2 and zoo
+#formatting with tidyr and zoo
 topmelted <- citytop %>% 
   tidyr::gather( key='Date', value='MedianPrice',-c(1:7)) %>% mutate(Date=(as.yearmon(Date)))
 statemelted <- Stateseries %>%
